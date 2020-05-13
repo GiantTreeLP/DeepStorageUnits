@@ -1,0 +1,6 @@
+api-version: '1.15'
+name: DeepStorageUnits
+version: '1.0'
+author: GiantTree
+main: de.gianttree.mc.deepstorage.DeepStorageUnits
+website: https://git.groundmc.net/GiantTree/DeepStorageUnits
