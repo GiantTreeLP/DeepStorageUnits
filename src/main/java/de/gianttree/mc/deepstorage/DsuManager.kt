@@ -17,15 +17,19 @@ class DsuManager(private val plugin: Plugin,
     private val blockMarker = NamespacedKey(plugin, "dsuBlocker")
 
     fun openInventory(player: Player, name: String, chest: EnderChest) {
-        val inventory = inventoryInteraction.openInventories.computeIfAbsent(chest) { _ ->
+        val inventory = inventoryInteraction.openInventories.computeIfAbsent(chest) {
             val inv = Bukkit.createInventory(player, InventoryType.CHEST, name)
 
             inv.contents = Array(inv.size) {
-                ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1).apply {
-                    val meta = itemMeta ?: return@apply
-                    meta.setDisplayName(" ")
-                    meta.persistentDataContainer[blockMarker, PersistentDataType.BYTE] = 1
-                    itemMeta = meta
+                if (it != 13) {
+                    ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1).apply {
+                        val meta = itemMeta ?: return@apply
+                        meta.setDisplayName(" ")
+                        meta.persistentDataContainer[blockMarker, PersistentDataType.BYTE] = 1
+                        itemMeta = meta
+                    }
+                } else {
+                    null
                 }
             }
 
