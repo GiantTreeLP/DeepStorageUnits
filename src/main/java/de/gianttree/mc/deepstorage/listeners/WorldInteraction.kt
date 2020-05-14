@@ -35,7 +35,8 @@ class WorldInteraction(private val plugin: DeepStorageUnits,
 
     @EventHandler
     fun onInteract(event: PlayerInteractEvent) {
-        if (event.action == Action.RIGHT_CLICK_BLOCK) {
+        if (event.action == Action.RIGHT_CLICK_BLOCK
+                && !event.player.isSneaking) {
             val enderChest = event.clickedBlock?.state
             if (enderChest is EnderChest) {
                 val dsuMarker = enderChest.persistentDataContainer.get(dsuMarkerKey, PersistentDataType.BYTE)
