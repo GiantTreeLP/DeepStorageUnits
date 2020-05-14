@@ -1,13 +1,12 @@
 package de.gianttree.mc.deepstorage
 
+import de.gianttree.mc.deepstorage.listeners.InventoryInteraction
+import de.gianttree.mc.deepstorage.listeners.WorldInteraction
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.enchantments.Enchantment
-import org.bukkit.inventory.ItemFlag
-import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.RecipeChoice
-import org.bukkit.inventory.ShapedRecipe
+import org.bukkit.inventory.*
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -30,6 +29,13 @@ class DeepStorageUnits : JavaPlugin() {
         this.saveDefaultConfig()
 
         this.addRecipes()
+        this.registerListeners()
+    }
+
+    private fun registerListeners() {
+        val inventoryInteraction = InventoryInteraction()
+        Bukkit.getPluginManager().registerEvents(inventoryInteraction, this)
+        Bukkit.getPluginManager().registerEvents(WorldInteraction(this, DsuManager(this, inventoryInteraction)), this)
     }
 
     private fun addRecipes() {
