@@ -33,7 +33,7 @@ class DeepStorageUnits : JavaPlugin() {
     }
 
     private fun registerListeners() {
-        val inventoryInteraction = InventoryInteraction()
+        val inventoryInteraction = InventoryInteraction(this)
         Bukkit.getPluginManager().registerEvents(inventoryInteraction, this)
         Bukkit.getPluginManager().registerEvents(WorldInteraction(this, DsuManager(this, inventoryInteraction)), this)
     }
