@@ -6,13 +6,16 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.enchantments.Enchantment
-import org.bukkit.inventory.*
+import org.bukkit.inventory.ItemFlag
+import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.RecipeChoice
+import org.bukkit.inventory.ShapedRecipe
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.java.JavaPlugin
 
 class DeepStorageUnits : JavaPlugin() {
 
-    private val emptyDeepStorageUnit = ItemStack(Material.ENDER_CHEST, 1).apply {
+    private val emptyDeepStorageUnit = ItemStack(Material.CHEST, 1).apply {
         val meta = this.itemMeta ?: throw NullPointerException()
         meta.setDisplayName(dsuName)
         meta.lore = listOf(dsuLore)
@@ -24,6 +27,11 @@ class DeepStorageUnits : JavaPlugin() {
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
         itemMeta = meta
     }
+
+    val blockMarker = NamespacedKey(this, "dsuBlocker")
+    val dsuMarker = NamespacedKey(this, "dsuMarker")
+    val nameKey = NamespacedKey(this, "dsuName")
+    val createdMarker = NamespacedKey(this, "dsuCreated")
 
     override fun onEnable() {
         this.saveDefaultConfig()

@@ -1,47 +1,55 @@
 package de.gianttree.mc.deepstorage
 
 import de.gianttree.mc.deepstorage.listeners.InventoryInteraction
-import org.bukkit.Bukkit
+import org.bukkit.ChatColor
 import org.bukkit.Material
-import org.bukkit.NamespacedKey
-import org.bukkit.block.EnderChest
-import org.bukkit.entity.Player
-import org.bukkit.event.inventory.InventoryType
-import org.bukkit.inventory.Inventory
+import org.bukkit.block.Chest
 import org.bukkit.inventory.ItemStack
+import org.bukkit.persistence.PersistentDataHolder
 import org.bukkit.persistence.PersistentDataType
-import org.bukkit.plugin.Plugin
 
-class DsuManager(private val plugin: Plugin,
+class DsuManager(private val plugin: DeepStorageUnits,
                  private val inventoryInteraction: InventoryInteraction) {
 
-    private val blockMarker = NamespacedKey(plugin, "dsuBlocker")
-
-    fun openInventory(player: Player, name: String, chest: EnderChest) {
-        val inventory = createInventory(chest, name)
-        Bukkit.getScheduler().runTask(plugin) { _ ->
-            player.openInventory(inventory)
-        }
+    private val blockerItem = ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1).apply {
+        val meta = itemMeta ?: return@apply
+        meta.setDisplayName(" ")
+        meta.persistentDataContainer[plugin.blockMarker, PersistentDataType.BYTE] = 1
+        itemMeta = meta
     }
 
-    private fun createInventory(chest: EnderChest, name: String): Inventory {
-        return inventoryInteraction.openInventories.computeIfAbsent(chest) {
-            val inv = Bukkit.createInventory(null, InventoryType.CHEST, name)
+    fun fillInventory(chest: Chest) {
+        val inv = chest.snapshotInventory
 
+        if (!chest.wasCreated()) {
             inv.contents = Array(inv.size) {
                 if (it != inv.size / 2) {
-                    ItemStack(Material.BLACK_STAINED_GLASS_PANE, 1).apply {
-                        val meta = itemMeta ?: return@apply
-                        meta.setDisplayName(" ")
-                        meta.persistentDataContainer[blockMarker, PersistentDataType.BYTE] = 1
-                        itemMeta = meta
-                    }
+                    blockerItem
                 } else {
-                    null
+                    inv.contents[it]
                 }
             }
-
-            inv
+            chest.persistentDataContainer[plugin.createdMarker, PersistentDataType.BYTE] = 1.toByte()
         }
     }
+
+    fun createInventory(chest: Chest, name: String) {
+        chest.customName = ChatColor.BLUE.toString() + name
+        fillInventory(chest)
+    }
+
+    fun handleHopperMovement(chest: Chest, item: ItemStack) {
+        val inventory = chest.snapshotInventory
+        val slot = inventory.size / 2
+
+        val oldItem = inventory.getItem(slot) ?: return
+        oldItem.amount -= item.amount
+
+        chest.update()
+    }
+
+    private fun PersistentDataHolder.wasCreated(): Boolean {
+        return this.persistentDataContainer[plugin.createdMarker, PersistentDataType.BYTE] == 1.toByte()
+    }
+
 }
