@@ -18,7 +18,7 @@ class DsuManager(private val plugin: DeepStorageUnits,
         itemMeta = meta
     }
 
-    fun fillInventory(chest: Chest) {
+    private fun fillInventory(chest: Chest) {
         val inv = chest.snapshotInventory
 
         if (!chest.wasCreated()) {
