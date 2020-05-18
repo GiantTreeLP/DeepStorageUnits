@@ -11,16 +11,6 @@ import org.bukkit.persistence.PersistentDataType
 
 class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
 
-//    @EventHandler
-//    fun onClose(event: InventoryCloseEvent) {
-//        val inventory = event.inventory
-//        if (inventory in openInventories.inverse()) {
-//            if (inventory.viewers.size == 1) {
-//                openInventories.inverse().remove(inventory)
-//            }
-//        }
-//    }
-
     @EventHandler
     fun blockBlockedSlots(event: InventoryClickEvent) {
         val inventory = event.clickedInventory ?: return
