@@ -32,6 +32,8 @@ class DeepStorageUnits : JavaPlugin() {
     val dsuMarker = NamespacedKey(this, "dsuMarker")
     val nameKey = NamespacedKey(this, "dsuName")
     val createdMarker = NamespacedKey(this, "dsuCreated")
+    val itemCountKey = NamespacedKey(this, "dsuItemCount")
+    val itemLimitKey = NamespacedKey(this, "dsuItemLimit")
 
     override fun onEnable() {
         this.saveDefaultConfig()

@@ -38,16 +38,6 @@ class DsuManager(private val plugin: DeepStorageUnits,
         fillInventory(chest)
     }
 
-    fun handleHopperMovement(chest: Chest, item: ItemStack) {
-        val inventory = chest.snapshotInventory
-        val slot = inventory.size / 2
-
-        val oldItem = inventory.getItem(slot) ?: return
-        oldItem.amount -= item.amount
-
-        chest.update()
-    }
-
     private fun PersistentDataHolder.wasCreated(): Boolean {
         return this.persistentDataContainer[plugin.createdMarker, PersistentDataType.BYTE] == 1.toByte()
     }
