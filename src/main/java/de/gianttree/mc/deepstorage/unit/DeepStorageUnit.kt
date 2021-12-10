@@ -1,18 +1,23 @@
 package de.gianttree.mc.deepstorage.unit
 
 import de.gianttree.mc.deepstorage.DeepStorageUnits
+import net.kyori.adventure.text.Component
+import org.bukkit.Material
 import org.bukkit.block.Chest
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import java.lang.ref.WeakReference
 import java.util.*
 
-class DeepStorageUnit(private val plugin: DeepStorageUnits,
-                      private val chest: Chest) {
+class DeepStorageUnit(
+    private val plugin: DeepStorageUnits,
+    private val chest: Chest
+) {
 
-    private val slot = chest.inventory.size / 2
+    private val slot = chest.snapshotInventory.size / 2
 
-    private var itemCount: Long = chest.persistentDataContainer[plugin.itemCountKey, PersistentDataType.LONG]
+    private var itemCount: Long = 0
+        get() = chest.persistentDataContainer[plugin.itemCountKey, PersistentDataType.LONG]
             ?: 0
         set(value) {
             field = value
@@ -20,8 +25,9 @@ class DeepStorageUnit(private val plugin: DeepStorageUnits,
             this.update()
         }
 
-    private var limit: Long = chest.persistentDataContainer[plugin.itemLimitKey, PersistentDataType.LONG]
-            ?: (chest.inventory.size * 64).toLong()
+    private var limit: Long = 0
+        get() = chest.persistentDataContainer[plugin.itemLimitKey, PersistentDataType.LONG]
+            ?: (chest.snapshotInventory.size * 64).toLong()
         set(value) {
             field = value
             chest.persistentDataContainer[plugin.itemLimitKey, PersistentDataType.LONG] = value
@@ -37,7 +43,7 @@ class DeepStorageUnit(private val plugin: DeepStorageUnits,
                 return null
             } else if (item.isSimilar(containedItem)) {
                 if (this.itemCount + item.amount > this.limit) {
-                    item.amount = (this.limit - this.itemCount).toInt()
+                    item.amount -= (this.limit - this.itemCount).toInt()
                     this.itemCount = this.limit
                 } else {
                     this.itemCount += item.amount
@@ -49,45 +55,73 @@ class DeepStorageUnit(private val plugin: DeepStorageUnits,
     }
 
     private fun setItem(item: ItemStack) {
-        chest.blockInventory.setItem(slot, item.clone())
+        chest.snapshotInventory.setItem(slot, item.clone())
         chest.update()
         this.itemCount = item.amount.toLong()
-        this.limit = (chest.inventory.size * item.maxStackSize).toLong()
+        this.limit = (chest.snapshotInventory.size * item.maxStackSize).toLong()
     }
 
-    fun retrieveItem(count: Int): ItemStack? {
+    fun retrieveItemFullStack(): ItemStack? {
         return getItem()?.apply {
-            amount = count
-        }.also {
-            this.itemCount -= count
+            amount = this.maxStackSize.coerceAtMost(this@DeepStorageUnit.itemCount.toInt())
+        }?.also {
+            this.itemCount -= it.amount
+        }
+    }
+
+    fun retrieveItemHalfStack(): ItemStack? {
+        return getItem()?.apply {
+            amount = (this.maxStackSize / 2)
+                .coerceAtMost(this@DeepStorageUnit.itemCount.toInt() / 2)
+                .coerceAtLeast(1)
+        }?.also {
+            this.itemCount -= it.amount
+        }
+    }
+
+    fun retrieveItemOne(): ItemStack? {
+        return getItem()?.also {
+            this.itemCount -= it.amount
         }
     }
 
     private fun getItem(): ItemStack? {
-        val item = chest.inventory.getItem(this.slot)?.clone()
+        val item = chest.snapshotInventory.getItem(this.slot)?.clone()
         return item?.apply {
             this.amount = 1
-            val meta = this.itemMeta ?: return@apply
-            meta.lore = null
-            this.itemMeta = meta
+            item.lore(null)
         }
     }
 
 
     private fun update() {
-        val item = chest.inventory.getItem(slot)
-        if (item != null) {
+        val item = chest.snapshotInventory.getItem(this.slot)
+        if (item != null && item.type != Material.AIR) {
+            item.lore(listOf(Component.text("Items: $itemCount (${itemCount / 64} + ${itemCount % 64})")))
             item.amount = this.itemCount.coerceAtMost(item.maxStackSize.toLong()).toInt()
-            val meta = item.itemMeta
-            meta.lore = listOf("Items: $itemCount (${itemCount / 64} + ${itemCount % 64})")
-            item.itemMeta = meta
         }
-        chest.inventory.setItem(slot, item)
+        if (this.itemCount == 0L) {
+            chest.snapshotInventory.setItem(this.slot, null)
+        } else {
+            chest.snapshotInventory.setItem(slot, item)
+        }
         chest.update()
     }
 
     override fun toString(): String {
         return "DeepStorageUnit(plugin=$plugin, chest=$chest, slot=$slot, itemCount=$itemCount)"
+    }
+
+    fun hasItem(): Boolean {
+        return getItem() != null
+    }
+
+    fun getDrop(): ItemStack {
+        return plugin.emptyDeepStorageUnit.clone().apply {
+            val meta = this.itemMeta
+            meta.displayName(chest.customName())
+            this.itemMeta = meta
+        }
     }
 
     companion object {
@@ -97,12 +131,15 @@ class DeepStorageUnit(private val plugin: DeepStorageUnits,
         fun forChest(plugin: DeepStorageUnits, chest: Chest): DeepStorageUnit? {
             return cache.compute(chest) { key, value ->
                 if (value?.get() == null) {
-                    println("Created new DSU")
                     WeakReference(DeepStorageUnit(plugin, key))
                 } else {
                     value
                 }
-            }!!.get()
+            }?.get()
+        }
+
+        fun invalidate(chest: Chest) {
+            cache.remove(chest)
         }
     }
 }

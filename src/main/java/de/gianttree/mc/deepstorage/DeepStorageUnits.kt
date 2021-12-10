@@ -2,6 +2,7 @@ package de.gianttree.mc.deepstorage
 
 import de.gianttree.mc.deepstorage.listeners.InventoryInteraction
 import de.gianttree.mc.deepstorage.listeners.WorldInteraction
+import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -15,25 +16,26 @@ import org.bukkit.plugin.java.JavaPlugin
 
 class DeepStorageUnits : JavaPlugin() {
 
-    private val emptyDeepStorageUnit = ItemStack(Material.CHEST, 1).apply {
+    internal val blockMarker = NamespacedKey(this, "dsuBlocker")
+    internal val dsuMarker = NamespacedKey(this, "dsuMarker")
+    internal val nameKey = NamespacedKey(this, "dsuName")
+    internal val createdMarker = NamespacedKey(this, "dsuCreated")
+    internal val itemCountKey = NamespacedKey(this, "dsuItemCount")
+    internal val itemLimitKey = NamespacedKey(this, "dsuItemLimit")
+
+    internal val emptyDeepStorageUnit = ItemStack(Material.CHEST, 1).apply {
         val meta = this.itemMeta ?: throw NullPointerException()
-        meta.setDisplayName(dsuName)
-        meta.lore = listOf(dsuLore)
+        meta.displayName(Component.text(dsuName))
+        meta.lore(listOf(Component.text(dsuLore)))
         meta.persistentDataContainer.set(
-                NamespacedKey(this@DeepStorageUnits, "dsuMarker"),
-                PersistentDataType.BYTE,
-                1)
+            dsuMarker,
+            PersistentDataType.BYTE,
+            1
+        )
         meta.addEnchant(Enchantment.DURABILITY, 1, false)
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS)
         itemMeta = meta
     }
-
-    val blockMarker = NamespacedKey(this, "dsuBlocker")
-    val dsuMarker = NamespacedKey(this, "dsuMarker")
-    val nameKey = NamespacedKey(this, "dsuName")
-    val createdMarker = NamespacedKey(this, "dsuCreated")
-    val itemCountKey = NamespacedKey(this, "dsuItemCount")
-    val itemLimitKey = NamespacedKey(this, "dsuItemLimit")
 
     override fun onEnable() {
         this.saveDefaultConfig()
