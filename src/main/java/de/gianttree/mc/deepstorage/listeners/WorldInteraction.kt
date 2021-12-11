@@ -9,6 +9,7 @@ import org.bukkit.Particle
 import org.bukkit.block.Chest
 import org.bukkit.block.DoubleChest
 import org.bukkit.block.Hopper
+import org.bukkit.entity.minecart.HopperMinecart
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
@@ -109,19 +110,31 @@ class WorldInteraction(
         // Items are pulled from a DSU
         if (source is Chest
             && source.isDSU()
-            && destination is Hopper
         ) {
-            event.isCancelled = true
-            val dsu = DeepStorageUnit.forChest(plugin, source) ?: return
-            val item = dsu.retrieveItemOne()
-            if (item != null) {
-                event.item = item
+            if (destination is Hopper) {
+                event.isCancelled = true
+                val dsu = DeepStorageUnit.forChest(plugin, source) ?: return
+                val item = dsu.retrieveItemOne()
+                if (item != null) {
+                    event.item = item
 
-                destination.snapshotInventory.addItem(item)
-                destination.update()
+                    destination.snapshotInventory.addItem(item)
+                    destination.update()
+                }
+            } else if (destination is HopperMinecart) {
+                event.isCancelled = true
+                val dsu = DeepStorageUnit.forChest(plugin, source) ?: return
+                val item = dsu.retrieveItemOne()
+                if (item != null) {
+                    event.item = item
+                    val residual = destination.inventory.addItem(item)
+                    residual.forEach { (_, item) ->
+                        dsu.addItem(item)
+                    }
+                }
             }
         } else if (source is Hopper) {
-            // Items are pushed to a DSU
+            // Items are pushed into a DSU
             if (destination is Chest && destination.isDSU()) {
 //                event.isCancelled = true
                 val dsu = DeepStorageUnit.forChest(plugin, destination) ?: return
