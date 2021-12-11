@@ -3,6 +3,7 @@ package de.gianttree.mc.deepstorage
 import de.gianttree.mc.deepstorage.listeners.InventoryInteraction
 import de.gianttree.mc.deepstorage.listeners.ItemInteraction
 import de.gianttree.mc.deepstorage.listeners.WorldInteraction
+import de.gianttree.mc.deepstorage.unit.EyeCandy
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -59,6 +60,7 @@ class DeepStorageUnits : JavaPlugin() {
 
         this.addRecipes()
         this.registerListeners()
+        this.registerEyeCandy()
     }
 
     private fun registerListeners() {
@@ -82,12 +84,21 @@ class DeepStorageUnits : JavaPlugin() {
         })
     }
 
+    private fun registerEyeCandy() {
+        val eyeCandy = EyeCandy(this)
+
+        eyeCandy.start()
+    }
+
     internal fun isDSU(dataHolder: PersistentDataHolder?): Boolean {
         return dataHolder?.persistentDataContainer?.get(this.dsuMarker, PersistentDataType.BYTE) == 1.toByte()
     }
 
     internal fun isBlocker(itemStack: ItemStack?): Boolean {
-        return itemStack?.itemMeta?.persistentDataContainer?.get(this.blockMarker, PersistentDataType.BYTE) == 1.toByte()
+        return itemStack?.itemMeta?.persistentDataContainer?.get(
+            this.blockMarker,
+            PersistentDataType.BYTE
+        ) == 1.toByte()
     }
 
     companion object {

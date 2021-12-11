@@ -13,7 +13,7 @@ private const val STACK_SIZE = 64
 
 class DeepStorageUnit(
     private val plugin: DeepStorageUnits,
-    private val chest: Chest
+    internal val chest: Chest
 ) {
 
     private val slot = chest.snapshotInventory.size / 2
@@ -162,6 +162,8 @@ class DeepStorageUnit(
     companion object {
 
         private val cache = WeakHashMap<Chest, WeakReference<DeepStorageUnit>>()
+
+        val cached get() = cache.values.mapNotNull { it.get() }
 
         fun forChest(plugin: DeepStorageUnits, chest: Chest): DeepStorageUnit? {
             return cache.compute(chest) { key, value ->

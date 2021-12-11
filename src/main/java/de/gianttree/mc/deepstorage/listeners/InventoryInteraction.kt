@@ -64,6 +64,7 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
 
             val cursor = event.cursor
             if (cursor == null || cursor.type == Material.AIR) {
+                @Suppress("NON_EXHAUSTIVE_WHEN")
                 when (event.action) {
                     InventoryAction.PICKUP_ALL -> {
                         event.view.cursor = dsu.retrieveItemFullStack()
