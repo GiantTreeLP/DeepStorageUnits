@@ -1,7 +1,6 @@
 package de.gianttree.mc.deepstorage.listeners
 
 import de.gianttree.mc.deepstorage.DeepStorageUnits
-import de.gianttree.mc.deepstorage.unit.DeepStorageUnit
 import org.bukkit.block.Chest
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -24,7 +23,7 @@ class ItemInteraction(
                 && blockState is Chest
                 && plugin.isDSU(blockState)
             ) {
-                val dsu = DeepStorageUnit.forChest(plugin, blockState) ?: return
+                val dsu = plugin.dsuForChest(blockState) ?: return
                 dsu.addUpgrade()
                 item.amount--
                 event.isCancelled = true

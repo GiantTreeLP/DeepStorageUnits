@@ -1,7 +1,6 @@
 package de.gianttree.mc.deepstorage.listeners
 
 import de.gianttree.mc.deepstorage.DeepStorageUnits
-import de.gianttree.mc.deepstorage.unit.DeepStorageUnit
 import org.bukkit.Material
 import org.bukkit.block.Chest
 import org.bukkit.event.Event
@@ -33,7 +32,7 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
         // Click in DSU
         val container = inventory.holder
         if (container is Chest && plugin.isDSU(container) && !plugin.isBlocker(event.currentItem)) {
-            val dsu = DeepStorageUnit.forChest(plugin, container) ?: return
+            val dsu = plugin.dsuForChest(container) ?: return
 
             if (event.action in PLACE_ACTIONS) {
                 event.view.cursor = dsu.addItem(event.cursor)
@@ -42,7 +41,7 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
         } else if (container is InventoryHolder) {
             val chest = event.inventory.holder
             if (chest is Chest && plugin.isDSU(chest)) {
-                val dsu = DeepStorageUnit.forChest(plugin, chest) ?: return
+                val dsu = plugin.dsuForChest(chest) ?: return
                 if (event.action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
                     event.currentItem = dsu.addItem(event.currentItem)
                     event.result = Event.Result.DENY
@@ -60,7 +59,7 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
         // Click in DSU
         val container = inventory.holder
         if (container is Chest && plugin.isDSU(container) && !plugin.isBlocker(event.currentItem)) {
-            val dsu = DeepStorageUnit.forChest(plugin, container) ?: return
+            val dsu = plugin.dsuForChest(container) ?: return
 
             val cursor = event.cursor
             if (cursor == null || cursor.type == Material.AIR) {
@@ -94,6 +93,7 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
         private val PLACE_ACTIONS = setOf(
             InventoryAction.PLACE_ALL,
             InventoryAction.PLACE_SOME,
+            InventoryAction.PLACE_ONE,
             InventoryAction.SWAP_WITH_CURSOR,
         )
     }

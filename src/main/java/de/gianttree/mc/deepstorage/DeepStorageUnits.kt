@@ -1,14 +1,20 @@
 package de.gianttree.mc.deepstorage
 
+import com.google.common.cache.CacheBuilder
+import com.google.common.cache.CacheLoader
+import com.google.gson.reflect.TypeToken
 import de.gianttree.mc.deepstorage.listeners.InventoryInteraction
 import de.gianttree.mc.deepstorage.listeners.ItemInteraction
 import de.gianttree.mc.deepstorage.listeners.WorldInteraction
+import de.gianttree.mc.deepstorage.unit.DeepStorageUnit
 import de.gianttree.mc.deepstorage.unit.EyeCandy
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
+import org.bukkit.block.Chest
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
@@ -17,14 +23,19 @@ import org.bukkit.inventory.ShapedRecipe
 import org.bukkit.persistence.PersistentDataHolder
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.java.JavaPlugin
+import java.time.Duration
 
 class DeepStorageUnits : JavaPlugin() {
 
     internal val blockMarker = NamespacedKey(this, "dsuBlocker")
     internal val dsuMarker = NamespacedKey(this, "dsuMarker")
     internal val createdMarker = NamespacedKey(this, "dsuCreated")
+
+    internal val loreKey = NamespacedKey(this, "dsuOriginalLore")
+
     internal val itemCountKey = NamespacedKey(this, "dsuItemCount")
     internal val itemLimitKey = NamespacedKey(this, "dsuItemLimit")
+
     internal val upgradeMarker = NamespacedKey(this, "dsuUpgradeMarker")
     internal val upgradeKey = NamespacedKey(this, "dsuUpgrades")
 
@@ -54,6 +65,27 @@ class DeepStorageUnits : JavaPlugin() {
             it.addEnchant(Enchantment.DURABILITY, 1, false)
             it.addItemFlags(ItemFlag.HIDE_ENCHANTS)
         }
+    }
+
+    internal val componentSerializer = GsonComponentSerializer.builder().build()
+
+    private val dsuCache = CacheBuilder.newBuilder()
+        .expireAfterAccess(Duration.ofMinutes(1))
+        .softValues()
+        .build<Chest, DeepStorageUnit>(
+            CacheLoader.from { chest ->
+                DeepStorageUnit(this, chest)
+            }
+        )
+
+    val cached get() = this.dsuCache.asMap().mapNotNull { it.value }
+
+    fun dsuForChest(chest: Chest): DeepStorageUnit? {
+        return this.dsuCache.get(chest)
+    }
+
+    fun invalidate(chest: Chest) {
+        this.dsuCache.invalidate(chest)
     }
 
     override fun onEnable() {
@@ -108,5 +140,8 @@ class DeepStorageUnits : JavaPlugin() {
 
         const val upgradeName = "Deep Upgrade"
         const val upgradeLore = "Upgrade your Deep Storage Unit with this item."
+
+        internal val componentListType = TypeToken.getParameterized(List::class.java, Component::class.java).type
+
     }
 }

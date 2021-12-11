@@ -11,7 +11,7 @@ class EyeCandy(
         Bukkit.getScheduler().runTaskTimerAsynchronously(
             plugin,
             Runnable {
-                DeepStorageUnit.cached.forEach {
+                plugin.cached.forEach {
                     it.chest.world.spawnParticle(
                         Particle.PORTAL,
                         it.chest.location.toCenterLocation(),

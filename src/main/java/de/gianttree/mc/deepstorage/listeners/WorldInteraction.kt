@@ -2,7 +2,6 @@ package de.gianttree.mc.deepstorage.listeners
 
 import de.gianttree.mc.deepstorage.DeepStorageUnits
 import de.gianttree.mc.deepstorage.DsuManager
-import de.gianttree.mc.deepstorage.unit.DeepStorageUnit
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Particle
@@ -75,7 +74,7 @@ class WorldInteraction(
         val chest = event.block.state
         if (chest is Chest && plugin.isDSU(chest)) {
             val centerLocation = chest.location.toCenterLocation()
-            val dsu = DeepStorageUnit.forChest(plugin, chest) ?: return
+            val dsu = plugin.dsuForChest(chest) ?: return
             while (dsu.hasItem()) {
                 dsu.retrieveItemFullStack()?.let {
                     if (it.amount > 0 && it.type != Material.AIR) {
@@ -100,7 +99,7 @@ class WorldInteraction(
             chest.world.playSound(centerLocation, chest.blockData.soundGroup.breakSound, 1f, 1f)
             chest.block.type = Material.AIR
             event.isCancelled = true
-            DeepStorageUnit.invalidate(chest)
+            plugin.invalidate(chest)
         }
     }
 
@@ -112,7 +111,7 @@ class WorldInteraction(
         if (source is Chest && plugin.isDSU(source)) {
             if (destination is Hopper) {
                 event.isCancelled = true
-                val dsu = DeepStorageUnit.forChest(plugin, source) ?: return
+                val dsu = plugin.dsuForChest(source) ?: return
                 val item = dsu.retrieveItemOne()
                 if (item != null) {
                     event.item = item
@@ -122,7 +121,7 @@ class WorldInteraction(
                 }
             } else if (destination is HopperMinecart) {
                 event.isCancelled = true
-                val dsu = DeepStorageUnit.forChest(plugin, source) ?: return
+                val dsu = plugin.dsuForChest(source) ?: return
                 val item = dsu.retrieveItemOne()
                 if (item != null) {
                     event.item = item
@@ -136,7 +135,7 @@ class WorldInteraction(
             // Items are pushed into a DSU
             if (destination is Chest && plugin.isDSU(destination)) {
 //                event.isCancelled = true
-                val dsu = DeepStorageUnit.forChest(plugin, destination) ?: return
+                val dsu = plugin.dsuForChest(destination) ?: return
                 dsu.addItem(event.item)
             }
         }

@@ -1,13 +1,12 @@
 package de.gianttree.mc.deepstorage.unit
 
 import de.gianttree.mc.deepstorage.DeepStorageUnits
+import de.gianttree.mc.deepstorage.DeepStorageUnits.Companion.componentListType
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.block.Chest
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
-import java.lang.ref.WeakReference
-import java.util.*
 
 private const val STACK_SIZE = 64
 
@@ -18,14 +17,14 @@ class DeepStorageUnit(
 
     private val slot = chest.snapshotInventory.size / 2
 
-    private val stackSize: Long
+    private val stackSize: Int
         get() {
-            return getItem()?.maxStackSize?.toLong() ?: STACK_SIZE.toLong()
+            return getItem()?.maxStackSize ?: STACK_SIZE
         }
 
     private val baseSize: Long
         get() {
-            return (chest.snapshotInventory.size * stackSize)
+            return (chest.snapshotInventory.size * stackSize).toLong()
         }
 
     internal var itemCount: Long = 0
@@ -87,7 +86,7 @@ class DeepStorageUnit(
 
     fun retrieveItemFullStack(): ItemStack? {
         return getItem()?.apply {
-            amount = this.maxStackSize.coerceAtMost(this@DeepStorageUnit.itemCount.toInt())
+            amount = stackSize.coerceAtMost(this@DeepStorageUnit.itemCount.toInt())
         }?.also {
             this.itemCount -= it.amount
         }
@@ -95,7 +94,7 @@ class DeepStorageUnit(
 
     fun retrieveItemHalfStack(): ItemStack? {
         return getItem()?.apply {
-            amount = (this.maxStackSize / 2)
+            amount = (stackSize / 2)
                 .coerceAtMost(this@DeepStorageUnit.itemCount.toInt() / 2)
                 .coerceAtLeast(1)
         }?.also {
@@ -119,7 +118,15 @@ class DeepStorageUnit(
         val item = chest.snapshotInventory.getItem(this.slot)?.clone()
         return item?.apply {
             this.amount = 1
-            item.lore(null)
+            val stored = item.itemMeta.persistentDataContainer[plugin.loreKey, PersistentDataType.STRING]
+            if (stored != null) {
+                item.editMeta {
+                    it.lore(plugin.componentSerializer.serializer().fromJson(stored, componentListType))
+                    it.persistentDataContainer.remove(plugin.loreKey)
+                }
+            } else {
+                item.lore(null)
+            }
         }
     }
 
@@ -127,6 +134,15 @@ class DeepStorageUnit(
         val item = chest.snapshotInventory.getItem(this.slot)
         if (item != null && item.type != Material.AIR) {
             val localStackSize = stackSize
+            val stored = item.itemMeta.persistentDataContainer[plugin.loreKey, PersistentDataType.STRING]
+            if (stored == null) {
+                val serialized = plugin.componentSerializer.serializer().toJson(item.lore())
+                item.editMeta {
+                    it.persistentDataContainer[plugin.loreKey, PersistentDataType.STRING] = serialized
+                }
+            }
+
+
             item.lore(
                 listOf(
                     Component.text("Items: $itemCount (${itemCount / localStackSize}S + ${itemCount % localStackSize})"),
@@ -134,7 +150,7 @@ class DeepStorageUnit(
                     Component.text("Upgrades: $upgrades")
                 )
             )
-            item.amount = this.itemCount.coerceAtMost(localStackSize).toInt()
+            item.amount = this.itemCount.coerceAtMost(localStackSize.toLong()).toInt()
         }
         if (this.itemCount == 0L) {
             chest.snapshotInventory.setItem(this.slot, null)
@@ -157,27 +173,6 @@ class DeepStorageUnit(
             val meta = this.itemMeta
             meta.displayName(chest.customName())
             this.itemMeta = meta
-        }
-    }
-
-    companion object {
-
-        private val cache = WeakHashMap<Chest, WeakReference<DeepStorageUnit>>()
-
-        val cached get() = cache.values.mapNotNull { it.get() }
-
-        fun forChest(plugin: DeepStorageUnits, chest: Chest): DeepStorageUnit? {
-            return cache.compute(chest) { key, value ->
-                if (value?.get() == null) {
-                    WeakReference(DeepStorageUnit(plugin, key))
-                } else {
-                    value
-                }
-            }?.get()
-        }
-
-        fun invalidate(chest: Chest) {
-            cache.remove(chest)
         }
     }
 }
