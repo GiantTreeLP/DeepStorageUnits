@@ -104,13 +104,13 @@ class DeepStorageUnits : JavaPlugin() {
     }
 
     private fun addRecipes() {
-        Bukkit.addRecipe(ShapedRecipe(NamespacedKey(this, "DsuItem"), emptyDeepStorageUnit).apply {
+        Bukkit.addRecipe(ShapedRecipe(NamespacedKey(this, "dsu_item"), emptyDeepStorageUnit).apply {
             shape("ABA", "BCB", "ABA")
             setIngredient('A', Material.EMERALD)
             setIngredient('B', Material.DIAMOND)
             setIngredient('C', RecipeChoice.ExactChoice(ItemStack(Material.ENDER_CHEST)))
         })
-        Bukkit.addRecipe(ShapedRecipe(NamespacedKey(this, "DsuUpgrade"), upgradeItem).apply {
+        Bukkit.addRecipe(ShapedRecipe(NamespacedKey(this, "dsu_upgrade"), upgradeItem).apply {
             shape("ACA", "ABA", "ADA")
             setIngredient('A', Material.OBSIDIAN)
             setIngredient('B', Material.ENDER_EYE)
