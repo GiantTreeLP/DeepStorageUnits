@@ -14,7 +14,6 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.inventory.InventoryMoveItemEvent
-import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataHolder
 import org.bukkit.persistence.PersistentDataType
@@ -94,8 +93,9 @@ class WorldInteraction(
             if (event.isDropItems) {
                 chest.world.dropItemNaturally(chest.location, dsu.getDrop())
             }
-            chest.world.spawnParticle(Particle.BLOCK_CRACK, chest.location, 48, chest.blockData)
-            chest.world.playSound(chest.location, chest.blockData.soundGroup.breakSound, 1f, 1f)
+            val centerLocation = chest.location.toCenterLocation()
+            chest.world.spawnParticle(Particle.BLOCK_CRACK, centerLocation, 48, chest.blockData)
+            chest.world.playSound(centerLocation, chest.blockData.soundGroup.breakSound, 1f, 1f)
             chest.block.type = Material.AIR
             event.isCancelled = true
             DeepStorageUnit.invalidate(chest)
@@ -104,20 +104,28 @@ class WorldInteraction(
 
     @EventHandler
     fun hopperMove(event: InventoryMoveItemEvent) {
-        val chest = event.source.holder
-        if (chest is Chest && chest.isDSU()) {
+        val source = event.source.holder
+        val destination = event.destination.holder
+        // Items are pulled from a DSU
+        if (source is Chest
+            && source.isDSU()
+            && destination is Hopper
+        ) {
             event.isCancelled = true
-            val hopper = event.destination.holder as? Hopper ?: return
-            val dsu = DeepStorageUnit.forChest(plugin, chest) ?: return
+            val dsu = DeepStorageUnit.forChest(plugin, source) ?: return
             val item = dsu.retrieveItemOne()
             if (item != null) {
                 event.item = item
-                item.amount = 1
 
-                chest.snapshotInventory.removeItem(item)
-                chest.update()
-                hopper.snapshotInventory.addItem(item)
-                hopper.update()
+                destination.snapshotInventory.addItem(item)
+                destination.update()
+            }
+        } else if (source is Hopper) {
+            // Items are pushed to a DSU
+            if (destination is Chest && destination.isDSU()) {
+//                event.isCancelled = true
+                val dsu = DeepStorageUnit.forChest(plugin, destination) ?: return
+                val item = dsu.addItem(event.item)
             }
         }
     }

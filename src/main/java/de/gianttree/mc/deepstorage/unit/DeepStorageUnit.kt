@@ -40,6 +40,7 @@ class DeepStorageUnit(
             val containedItem = getItem()
             if (containedItem == null) {
                 setItem(item)
+                item.amount = 0
                 return null
             } else if (item.isSimilar(containedItem)) {
                 if (this.itemCount + item.amount > this.limit) {
