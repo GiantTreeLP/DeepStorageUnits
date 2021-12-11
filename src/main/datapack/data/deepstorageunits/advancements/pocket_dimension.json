@@ -1,0 +1,27 @@
+{
+  "display": {
+    "icon": {
+      "item": "minecraft:chest"
+    },
+    "title": "Finding the Pocket Dimension",
+    "description": "How do I get out of here?",
+    "frame": "goal"
+  },
+  "parent": "minecraft:end/root",
+  "criteria": {
+    "entered_end": {
+      "trigger": "minecraft:changed_dimension",
+      "conditions": {
+        "to": "minecraft:the_end"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "entered_end"
+    ]
+  ],
+  "rewards": {
+    "function": "deepstorageunits:unlock_dsu"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "display": {
+    "icon": {
+      "item": "minecraft:ender_eye"
+    },
+    "title": "Craft a Deep Storage Unit",
+    "description": "So much space...",
+    "frame": "goal"
+  },
+  "parent": "deepstorageunits:pocket_dimension",
+  "criteria": {
+    "crafted_dsu": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": ["minecraft:chest"],
+            "nbt": "{PublicBukkitValues:{\"deepstorageunits:dsumarker\":1b}}"
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "crafted_dsu"
+    ]
+  ],
+  "rewards": {
+    "function": "deepstorageunits:unlock_dsu_upgrade"
+  }
+}
