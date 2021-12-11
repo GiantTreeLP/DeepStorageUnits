@@ -143,11 +143,17 @@ class DeepStorageUnit(
             }
 
 
+            val formattedLimit = String.format("%,d", limit)
+            val formattedCount = String.format("%,d", itemCount)
+            val formattedStackLimit = String.format("%,d", limit / localStackSize)
+            val formattedUpgrades = String.format("%,d", upgrades)
+            val formattedStackCount = String.format("%,d", itemCount / localStackSize)
+            val formattedRemainderCount = String.format("%,d", itemCount % localStackSize)
             item.lore(
                 listOf(
-                    Component.text("Items: $itemCount (${itemCount / localStackSize}S + ${itemCount % localStackSize})"),
-                    Component.text("Limit: $limit items (${limit / localStackSize} stacks)"),
-                    Component.text("Upgrades: $upgrades")
+                    Component.text("Items: $formattedCount (${formattedStackCount}S + $formattedRemainderCount)"),
+                    Component.text("Limit: $formattedLimit items ($formattedStackLimit stacks)"),
+                    Component.text("Upgrades: $formattedUpgrades")
                 )
             )
             item.amount = this.itemCount.coerceAtMost(localStackSize.toLong()).toInt()

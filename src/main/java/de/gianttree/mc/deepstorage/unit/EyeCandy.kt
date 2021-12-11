@@ -15,7 +15,7 @@ class EyeCandy(
                     it.chest.world.spawnParticle(
                         Particle.PORTAL,
                         it.chest.location.toCenterLocation(),
-                        8,
+                        4,
                     )
                 }
             },

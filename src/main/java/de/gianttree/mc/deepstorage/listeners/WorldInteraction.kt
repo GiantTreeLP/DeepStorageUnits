@@ -97,7 +97,7 @@ class WorldInteraction(
             if (event.isDropItems) {
                 chest.world.dropItemNaturally(chest.location, dsu.getDrop())
             }
-            chest.world.spawnParticle(Particle.BLOCK_CRACK, centerLocation, 24, chest.blockData)
+            chest.world.spawnParticle(Particle.BLOCK_CRACK, centerLocation, 16, chest.blockData)
             chest.world.playSound(centerLocation, chest.blockData.soundGroup.breakSound, 1f, 1f)
             chest.block.type = Material.AIR
             event.isCancelled = true
