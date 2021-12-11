@@ -10,17 +10,15 @@ import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryAction
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.inventory.InventoryHolder
-import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataHolder
-import org.bukkit.persistence.PersistentDataType
 
 class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
 
     @EventHandler
     fun blockBlockedSlots(event: InventoryClickEvent) {
         val inventory = event.clickedInventory ?: return
-        if (inventory.holder?.isDSU() == true) {
-            if (event.currentItem.isBlocker()) {
+        if (plugin.isDSU(inventory.holder as? PersistentDataHolder)) {
+            if (plugin.isBlocker(event.currentItem)) {
                 event.result = Event.Result.DENY
             }
         }
@@ -34,7 +32,7 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
         val inventory = event.clickedInventory ?: return
         // Click in DSU
         val container = inventory.holder
-        if (container is Chest && container.isDSU() && !event.currentItem.isBlocker()) {
+        if (container is Chest && plugin.isDSU(container) && !plugin.isBlocker(event.currentItem)) {
             val dsu = DeepStorageUnit.forChest(plugin, container) ?: return
 
             if (event.action in PLACE_ACTIONS) {
@@ -43,7 +41,7 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
             }
         } else if (container is InventoryHolder) {
             val chest = event.inventory.holder
-            if (chest is Chest && chest.isDSU()) {
+            if (chest is Chest && plugin.isDSU(chest)) {
                 val dsu = DeepStorageUnit.forChest(plugin, chest) ?: return
                 if (event.action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
                     event.currentItem = dsu.addItem(event.currentItem)
@@ -61,7 +59,7 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
         val inventory = event.clickedInventory ?: return
         // Click in DSU
         val container = inventory.holder
-        if (container is Chest && container.isDSU() && !event.currentItem.isBlocker()) {
+        if (container is Chest && plugin.isDSU(container) && !plugin.isBlocker(event.currentItem)) {
             val dsu = DeepStorageUnit.forChest(plugin, container) ?: return
 
             val cursor = event.cursor
@@ -90,14 +88,6 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
             }
         }
     }
-
-    private fun InventoryHolder.isDSU(): Boolean {
-        return this is PersistentDataHolder &&
-                this.persistentDataContainer[plugin.dsuMarker, PersistentDataType.BYTE] == 1.toByte()
-    }
-
-    private fun ItemStack?.isBlocker() =
-        this?.itemMeta?.persistentDataContainer?.get(plugin.blockMarker, PersistentDataType.BYTE) == 1.toByte()
 
     companion object {
         private val PLACE_ACTIONS = setOf(

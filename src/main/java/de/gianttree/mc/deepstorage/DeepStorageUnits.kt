@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.RecipeChoice
 import org.bukkit.inventory.ShapedRecipe
+import org.bukkit.persistence.PersistentDataHolder
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -79,6 +80,14 @@ class DeepStorageUnits : JavaPlugin() {
             setIngredient('A', Material.OBSIDIAN)
             setIngredient('B', Material.ENDER_EYE)
         })
+    }
+
+    internal fun isDSU(dataHolder: PersistentDataHolder?): Boolean {
+        return dataHolder?.persistentDataContainer?.get(this.dsuMarker, PersistentDataType.BYTE) == 1.toByte()
+    }
+
+    internal fun isBlocker(itemStack: ItemStack?): Boolean {
+        return itemStack?.itemMeta?.persistentDataContainer?.get(this.blockMarker, PersistentDataType.BYTE) == 1.toByte()
     }
 
     companion object {

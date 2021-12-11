@@ -8,7 +8,6 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
-import org.bukkit.persistence.PersistentDataHolder
 import org.bukkit.persistence.PersistentDataType
 
 class ItemInteraction(
@@ -23,7 +22,7 @@ class ItemInteraction(
             val item = event.item!!
             if (item.isUpgrade()
                 && blockState is Chest
-                && blockState.isDSU()
+                && plugin.isDSU(blockState)
             ) {
                 val dsu = DeepStorageUnit.forChest(plugin, blockState) ?: return
                 dsu.addUpgrade()
@@ -31,10 +30,6 @@ class ItemInteraction(
                 event.isCancelled = true
             }
         }
-    }
-
-    private fun PersistentDataHolder.isDSU(): Boolean {
-        return this.persistentDataContainer[plugin.dsuMarker, PersistentDataType.BYTE] == 1.toByte()
     }
 
     private fun ItemStack.isUpgrade(): Boolean {

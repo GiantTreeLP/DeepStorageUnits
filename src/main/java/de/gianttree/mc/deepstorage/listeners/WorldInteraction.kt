@@ -15,8 +15,6 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.inventory.InventoryMoveItemEvent
-import org.bukkit.inventory.ItemStack
-import org.bukkit.persistence.PersistentDataHolder
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.block.data.type.Chest as DataTypeChest
 
@@ -31,7 +29,7 @@ class WorldInteraction(
         if (chest is Chest) {
             val meta = event.itemInHand.itemMeta ?: return
             val chestBlockData = chest.blockData as DataTypeChest
-            if (meta.isDSU()) {
+            if (plugin.isDSU(meta)) {
 
                 chest.persistentDataContainer.set(plugin.dsuMarker, PersistentDataType.BYTE, 1.toByte())
 
@@ -57,7 +55,7 @@ class WorldInteraction(
                         }
                     }
                     val otherBlockData = otherBlockState.blockData
-                    if (otherBlockState.isDSU()
+                    if (plugin.isDSU(otherBlockState)
                         && otherBlockData is DataTypeChest
                     ) {
                         otherBlockData.type = DataTypeChest.Type.SINGLE
@@ -75,7 +73,7 @@ class WorldInteraction(
     @EventHandler
     fun onBreak(event: BlockBreakEvent) {
         val chest = event.block.state
-        if (chest is Chest && chest.isDSU()) {
+        if (chest is Chest && plugin.isDSU(chest)) {
             val centerLocation = chest.location.toCenterLocation()
             val dsu = DeepStorageUnit.forChest(plugin, chest) ?: return
             while (dsu.hasItem()) {
@@ -110,9 +108,7 @@ class WorldInteraction(
         val source = event.source.holder
         val destination = event.destination.holder
         // Items are pulled from a DSU
-        if (source is Chest
-            && source.isDSU()
-        ) {
+        if (source is Chest && plugin.isDSU(source)) {
             if (destination is Hopper) {
                 event.isCancelled = true
                 val dsu = DeepStorageUnit.forChest(plugin, source) ?: return
@@ -137,25 +133,12 @@ class WorldInteraction(
             }
         } else if (source is Hopper) {
             // Items are pushed into a DSU
-            if (destination is Chest && destination.isDSU()) {
+            if (destination is Chest && plugin.isDSU(destination)) {
 //                event.isCancelled = true
                 val dsu = DeepStorageUnit.forChest(plugin, destination) ?: return
-                val item = dsu.addItem(event.item)
+                dsu.addItem(event.item)
             }
         }
-    }
-
-    private fun PersistentDataHolder.isDSU(): Boolean {
-        return this.persistentDataContainer[plugin.dsuMarker, PersistentDataType.BYTE] == 1.toByte()
-    }
-
-    private fun ItemStack.isBlocker(): Boolean {
-        val meta = this.itemMeta ?: return false
-        return meta.persistentDataContainer[plugin.blockMarker, PersistentDataType.BYTE] == 1.toByte()
-    }
-
-    private fun Chest.getCenterItem(): ItemStack? {
-        return this.inventory.getItem(this.inventory.size / 2)?.clone()
     }
 
 }

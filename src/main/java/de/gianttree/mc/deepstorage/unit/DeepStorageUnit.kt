@@ -3,7 +3,6 @@ package de.gianttree.mc.deepstorage.unit
 import de.gianttree.mc.deepstorage.DeepStorageUnits
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
-import org.bukkit.Particle
 import org.bukkit.block.Chest
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
