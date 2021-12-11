@@ -12,7 +12,9 @@ import org.bukkit.entity.minecart.HopperMinecart
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.inventory.InventoryMoveItemEvent
 import org.bukkit.persistence.PersistentDataType
 import org.bukkit.block.data.type.Chest as DataTypeChest
@@ -137,6 +139,30 @@ class WorldInteraction(
 //                event.isCancelled = true
                 val dsu = plugin.dsuForChest(destination) ?: return
                 dsu.addItem(event.item)
+            }
+        }
+    }
+
+    @EventHandler
+    fun preventExplosion(event: EntityExplodeEvent) {
+        event.blockList().removeIf {
+            val state = it.state
+            if (state is Chest) {
+                plugin.isDSU(state)
+            } else {
+                false
+            }
+        }
+    }
+
+    @EventHandler
+    fun preventExplosion(event: BlockExplodeEvent) {
+        event.blockList().removeIf {
+            val state = it.state
+            if (state is Chest) {
+                plugin.isDSU(state)
+            } else {
+                false
             }
         }
     }
