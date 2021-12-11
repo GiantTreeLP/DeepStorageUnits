@@ -34,11 +34,6 @@ class WorldInteraction(
             if (meta.isDSU()) {
 
                 chest.persistentDataContainer.set(plugin.dsuMarker, PersistentDataType.BYTE, 1.toByte())
-//                chest.persistentDataContainer.set(
-//                    plugin.nameKey,
-//                    PersistentDataType.STRING,
-//                    meta.displayName().toString()
-//                )
 
                 dsuManager.createInventory(chest, meta.displayName())
                 chest.blockData = chestBlockData
@@ -81,6 +76,7 @@ class WorldInteraction(
     fun onBreak(event: BlockBreakEvent) {
         val chest = event.block.state
         if (chest is Chest && chest.isDSU()) {
+            val centerLocation = chest.location.toCenterLocation()
             val dsu = DeepStorageUnit.forChest(plugin, chest) ?: return
             while (dsu.hasItem()) {
                 dsu.retrieveItemFullStack()?.let {
@@ -89,12 +85,18 @@ class WorldInteraction(
                     }
                 }
             }
+            if (dsu.upgrades > 0) {
+                chest.world.dropItemNaturally(
+                    centerLocation,
+                    plugin.upgradeItem.clone().apply {
+                        amount = dsu.upgrades
+                    })
+            }
             chest.snapshotInventory.clear()
             chest.update()
             if (event.isDropItems) {
                 chest.world.dropItemNaturally(chest.location, dsu.getDrop())
             }
-            val centerLocation = chest.location.toCenterLocation()
             chest.world.spawnParticle(Particle.BLOCK_CRACK, centerLocation, 48, chest.blockData)
             chest.world.playSound(centerLocation, chest.blockData.soundGroup.breakSound, 1f, 1f)
             chest.block.type = Material.AIR

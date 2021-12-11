@@ -3,11 +3,14 @@ package de.gianttree.mc.deepstorage.unit
 import de.gianttree.mc.deepstorage.DeepStorageUnits
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
+import org.bukkit.Particle
 import org.bukkit.block.Chest
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import java.lang.ref.WeakReference
 import java.util.*
+
+private const val STACK_SIZE = 64
 
 class DeepStorageUnit(
     private val plugin: DeepStorageUnits,
@@ -16,21 +19,42 @@ class DeepStorageUnit(
 
     private val slot = chest.snapshotInventory.size / 2
 
-    private var itemCount: Long = 0
+    private val stackSize: Long
+        get() {
+            return getItem()?.maxStackSize?.toLong() ?: STACK_SIZE.toLong()
+        }
+
+    private val baseSize: Long
+        get() {
+            return (chest.snapshotInventory.size * stackSize)
+        }
+
+    internal var itemCount: Long = 0
         get() = chest.persistentDataContainer[plugin.itemCountKey, PersistentDataType.LONG]
             ?: 0
-        set(value) {
+        private set(value) {
             field = value
             chest.persistentDataContainer[plugin.itemCountKey, PersistentDataType.LONG] = value
             this.update()
         }
 
-    private var limit: Long = 0
-        get() = chest.persistentDataContainer[plugin.itemLimitKey, PersistentDataType.LONG]
-            ?: (chest.snapshotInventory.size * 64).toLong()
-        set(value) {
+    internal var limit: Long = 0
+        get() {
+            return chest.persistentDataContainer[plugin.itemLimitKey, PersistentDataType.LONG]
+                ?: baseSize
+        }
+        private set(value) {
             field = value
             chest.persistentDataContainer[plugin.itemLimitKey, PersistentDataType.LONG] = value
+            this.update()
+        }
+
+    internal var upgrades: Int = 0
+        get() = chest.persistentDataContainer[plugin.upgradeKey, PersistentDataType.INTEGER]
+            ?: 0
+        private set(value) {
+            field = value
+            chest.persistentDataContainer[plugin.upgradeKey, PersistentDataType.INTEGER] = value
             this.update()
         }
 
@@ -59,7 +83,7 @@ class DeepStorageUnit(
         chest.snapshotInventory.setItem(slot, item.clone())
         chest.update()
         this.itemCount = item.amount.toLong()
-        this.limit = (chest.snapshotInventory.size * item.maxStackSize).toLong()
+        this.limit = ((chest.snapshotInventory.size + this.upgrades) * item.maxStackSize).toLong()
     }
 
     fun retrieveItemFullStack(): ItemStack? {
@@ -86,6 +110,12 @@ class DeepStorageUnit(
         }
     }
 
+    fun addUpgrade() {
+        this.upgrades++
+        this.limit = baseSize + this.upgrades * stackSize
+//        this.update()
+    }
+
     private fun getItem(): ItemStack? {
         val item = chest.snapshotInventory.getItem(this.slot)?.clone()
         return item?.apply {
@@ -94,11 +124,16 @@ class DeepStorageUnit(
         }
     }
 
-
     private fun update() {
         val item = chest.snapshotInventory.getItem(this.slot)
         if (item != null && item.type != Material.AIR) {
-            item.lore(listOf(Component.text("Items: $itemCount (${itemCount / 64} + ${itemCount % 64})")))
+            item.lore(
+                listOf(
+                    Component.text("Items: $itemCount (${itemCount / STACK_SIZE}S + ${itemCount % STACK_SIZE})"),
+                    Component.text("Limit: $limit items)"),
+                    Component.text("Upgrades: $upgrades")
+                )
+            )
             item.amount = this.itemCount.coerceAtMost(item.maxStackSize.toLong()).toInt()
         }
         if (this.itemCount == 0L) {
