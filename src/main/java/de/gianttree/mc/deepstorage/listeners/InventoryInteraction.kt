@@ -73,6 +73,9 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
                         event.view.cursor = dsu.retrieveItemHalfStack()
                         event.result = Event.Result.DENY
                     }
+                    InventoryAction.HOTBAR_SWAP, InventoryAction.HOTBAR_MOVE_AND_READD -> {
+                        event.result = Event.Result.DENY
+                    }
                 }
             }
             if (event.action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
