@@ -111,9 +111,11 @@ class DeepStorageUnits : JavaPlugin() {
             setIngredient('C', RecipeChoice.ExactChoice(ItemStack(Material.ENDER_CHEST)))
         })
         Bukkit.addRecipe(ShapedRecipe(NamespacedKey(this, "DsuUpgrade"), upgradeItem).apply {
-            shape("AAA", "ABA", "AAA")
+            shape("ACA", "ABA", "ADA")
             setIngredient('A', Material.OBSIDIAN)
             setIngredient('B', Material.ENDER_EYE)
+            setIngredient('C', Material.DIAMOND)
+            setIngredient('D', Material.EMERALD)
         })
     }
 
