@@ -126,14 +126,15 @@ class DeepStorageUnit(
     private fun update() {
         val item = chest.snapshotInventory.getItem(this.slot)
         if (item != null && item.type != Material.AIR) {
+            val localStackSize = stackSize
             item.lore(
                 listOf(
-                    Component.text("Items: $itemCount (${itemCount / STACK_SIZE}S + ${itemCount % STACK_SIZE})"),
-                    Component.text("Limit: $limit items)"),
+                    Component.text("Items: $itemCount (${itemCount / localStackSize}S + ${itemCount % localStackSize})"),
+                    Component.text("Limit: $limit items (${limit / localStackSize} stacks)"),
                     Component.text("Upgrades: $upgrades")
                 )
             )
-            item.amount = this.itemCount.coerceAtMost(item.maxStackSize.toLong()).toInt()
+            item.amount = this.itemCount.coerceAtMost(localStackSize).toInt()
         }
         if (this.itemCount == 0L) {
             chest.snapshotInventory.setItem(this.slot, null)

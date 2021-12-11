@@ -5,6 +5,7 @@ import de.gianttree.mc.deepstorage.listeners.ItemInteraction
 import de.gianttree.mc.deepstorage.listeners.WorldInteraction
 import de.gianttree.mc.deepstorage.unit.EyeCandy
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -29,7 +30,7 @@ class DeepStorageUnits : JavaPlugin() {
 
     internal val emptyDeepStorageUnit = ItemStack(Material.CHEST, 1).apply {
         this.editMeta {
-            it.displayName(Component.text(dsuName))
+            it.displayName(Component.text(dsuName).color(NamedTextColor.AQUA))
             it.lore(listOf(Component.text(dsuLore)))
 
             it.persistentDataContainer.set(
@@ -42,7 +43,7 @@ class DeepStorageUnits : JavaPlugin() {
 
     internal val upgradeItem = ItemStack(Material.ENDER_EYE, 1).apply {
         this.editMeta {
-            it.displayName(Component.text(upgradeName))
+            it.displayName(Component.text(upgradeName).color(NamedTextColor.GOLD))
             it.lore(listOf(Component.text(upgradeLore)))
             it.persistentDataContainer.set(
                 upgradeMarker,
