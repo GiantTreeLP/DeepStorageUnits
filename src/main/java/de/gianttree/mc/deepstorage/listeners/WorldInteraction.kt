@@ -7,6 +7,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Particle
 import org.bukkit.block.Chest
+import org.bukkit.block.DoubleChest
 import org.bukkit.block.Hopper
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -29,16 +30,10 @@ class WorldInteraction(
         val chest = event.block.state
         if (chest is Chest) {
             val meta = event.itemInHand.itemMeta ?: return
-            val markerValue = meta.persistentDataContainer.get(plugin.dsuMarker, PersistentDataType.BYTE)
-            val blockData = chest.blockData
-            if (markerValue == 1.toByte()) {
+            val chestBlockData = chest.blockData as DataTypeChest
+            if (meta.isDSU()) {
 
-                // Prevent double chests
-                if ((chest.blockData as DataTypeChest).type != DataTypeChest.Type.SINGLE) {
-                    event.isCancelled = true
-                }
-
-                chest.persistentDataContainer.set(plugin.dsuMarker, PersistentDataType.BYTE, markerValue)
+                chest.persistentDataContainer.set(plugin.dsuMarker, PersistentDataType.BYTE, 1.toByte())
 //                chest.persistentDataContainer.set(
 //                    plugin.nameKey,
 //                    PersistentDataType.STRING,
@@ -46,36 +41,39 @@ class WorldInteraction(
 //                )
 
                 dsuManager.createInventory(chest, meta.displayName())
+                chest.blockData = chestBlockData
                 chest.update()
-            } else {
-                Bukkit.getScheduler().runTask(plugin, Runnable {
-                    if ((blockData as DataTypeChest).type != DataTypeChest.Type.SINGLE) {
-                        for (x in -1..1) {
-                            for (z in -1..1) {
-                                val otherBlock =
-                                    event.block.world.getBlockAt(event.block.x + x, event.block.y, event.block.z + z)
-                                val otherState = otherBlock.state
-                                val otherBlockData = otherState.blockData
-                                if (otherState is Chest
-                                    && otherState.isDSU()
-                                    && otherBlockData is DataTypeChest
-                                    && otherBlockData.type != DataTypeChest.Type.SINGLE
-                                    && otherBlockData.facing == blockData.facing
-                                ) {
-                                    otherBlockData.type = DataTypeChest.Type.SINGLE
-                                    otherState.blockData = otherBlockData
-                                    otherState.update()
-                                    blockData.type = DataTypeChest.Type.SINGLE
-                                    chest.blockData = blockData
-                                    chest.update()
-                                    return@Runnable
-                                }
-                            }
+            }
+            // Check whether the new chest is a double chest
+            // and if so, check whether the other chest is already a DSU.
+            // Then proceed to make the new chest a single chest.
+            Bukkit.getScheduler().runTask(plugin, Runnable {
+                val holder = chest.inventory.holder
+                if (holder is DoubleChest) {
+                    val otherBlockState = when (chestBlockData.type) {
+                        DataTypeChest.Type.LEFT -> {
+                            holder.leftSide as Chest
+                        }
+                        DataTypeChest.Type.RIGHT -> {
+                            holder.rightSide as Chest
+                        }
+                        else -> {
+                            return@Runnable
                         }
                     }
-
-                })
-            }
+                    val otherBlockData = otherBlockState.blockData
+                    if (otherBlockState.isDSU()
+                        && otherBlockData is DataTypeChest
+                    ) {
+                        otherBlockData.type = DataTypeChest.Type.SINGLE
+                        otherBlockState.blockData = otherBlockData
+                        otherBlockState.update()
+                        chestBlockData.type = DataTypeChest.Type.SINGLE
+                        chest.blockData = chestBlockData
+                        chest.update()
+                    }
+                }
+            })
         }
     }
 
@@ -124,9 +122,8 @@ class WorldInteraction(
         }
     }
 
-    private fun InventoryHolder.isDSU(): Boolean {
-        return this is PersistentDataHolder &&
-                this.persistentDataContainer[plugin.dsuMarker, PersistentDataType.BYTE] == 1.toByte()
+    private fun PersistentDataHolder.isDSU(): Boolean {
+        return this.persistentDataContainer[plugin.dsuMarker, PersistentDataType.BYTE] == 1.toByte()
     }
 
     private fun ItemStack.isBlocker(): Boolean {
