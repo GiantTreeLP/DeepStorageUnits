@@ -8,6 +8,8 @@ import org.bukkit.block.Chest
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 
+private const val NUM_STACKS = 64
+
 private const val STACK_SIZE = 64
 
 class DeepStorageUnit(
@@ -24,7 +26,12 @@ class DeepStorageUnit(
 
     private val baseSize: Long
         get() {
-            return (chest.snapshotInventory.size * stackSize).toLong()
+            return (NUM_STACKS * stackSize).toLong()
+        }
+
+    private val scaleUpgrades: Int
+        get() {
+            return this.upgrades * 8
         }
 
     internal var itemCount: Long = 0
@@ -81,7 +88,7 @@ class DeepStorageUnit(
         chest.snapshotInventory.setItem(slot, item.clone())
         chest.update()
         this.itemCount = item.amount.toLong()
-        this.limit = ((chest.snapshotInventory.size + this.upgrades) * item.maxStackSize).toLong()
+        this.limit = baseSize + (this.scaleUpgrades * stackSize).toLong()
     }
 
     fun retrieveItemFullStack(): ItemStack? {
@@ -110,7 +117,7 @@ class DeepStorageUnit(
 
     fun addUpgrade() {
         this.upgrades++
-        this.limit = baseSize + this.upgrades * stackSize
+        this.limit = baseSize + this.scaleUpgrades * stackSize
 //        this.update()
     }
 
