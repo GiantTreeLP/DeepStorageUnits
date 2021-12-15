@@ -211,6 +211,7 @@ class DeepStorageUnit(
     }
 
     override fun toString(): String {
-        return "DeepStorageUnit(chest=$chest, slot=$centerSlot, stackSize=$stackSize, baseSize=$baseSize, scaleUpgrades=$bonusStacks, itemCount=$itemCount, limit=$limit, upgrades=$upgrades)"
+        return "DeepStorageUnit(plugin=$plugin, centerSlot=$centerSlot, infoSlot=$infoSlot, stackSize=$stackSize, baseSize=$baseSize, bonusStacks=$bonusStacks, itemCount=$itemCount, limit=$limit, upgrades=$upgrades)"
     }
+
 }

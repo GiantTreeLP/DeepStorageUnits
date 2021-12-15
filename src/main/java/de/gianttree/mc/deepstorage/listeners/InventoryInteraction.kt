@@ -37,6 +37,18 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
             if (event.action in PLACE_ACTIONS) {
                 event.view.cursor = dsu.addItem(event.cursor)
                 event.result = Event.Result.DENY
+            } else if (event.action in HOT_BAR_ACTIONS) {
+                if (event.hotbarButton == -1 && event.whoClicked.inventory.itemInOffHand.type != Material.AIR) {
+                    event.whoClicked.inventory.setItemInOffHand(dsu.addItem(event.whoClicked.inventory.itemInOffHand))
+                    event.result = Event.Result.DENY
+                } else if (event.hotbarButton != -1 && event.whoClicked.inventory.getItem(event.hotbarButton)?.type != Material.AIR) {
+                    event.whoClicked.inventory.setItem(
+                        event.hotbarButton,
+                        dsu.addItem(event.whoClicked.inventory.getItem(event.hotbarButton))
+                    )
+                    event.result = Event.Result.DENY
+                }
+
             }
         } else if (container is InventoryHolder) {
             val chest = event.inventory.holder
@@ -73,8 +85,20 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
                         event.view.cursor = dsu.retrieveItemHalfStack()
                         event.result = Event.Result.DENY
                     }
-                    InventoryAction.HOTBAR_SWAP, InventoryAction.HOTBAR_MOVE_AND_READD -> {
-                        event.result = Event.Result.DENY
+                    in HOT_BAR_ACTIONS -> {
+                        if (dsu.hasItem()) {
+                            if (event.hotbarButton == -1) {
+                                if (event.whoClicked.inventory.itemInOffHand.type == Material.AIR) {
+                                    event.whoClicked.inventory.setItemInOffHand(dsu.retrieveItemFullStack())
+                                    event.result = Event.Result.DENY
+                                }
+                            } else {
+                                if (event.whoClicked.inventory.getItem(event.hotbarButton) == null) {
+                                    event.whoClicked.inventory.setItem(event.hotbarButton, dsu.retrieveItemFullStack())
+                                    event.result = Event.Result.DENY
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -98,6 +122,11 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
             InventoryAction.PLACE_SOME,
             InventoryAction.PLACE_ONE,
             InventoryAction.SWAP_WITH_CURSOR,
+        )
+
+        private val HOT_BAR_ACTIONS = setOf(
+            InventoryAction.HOTBAR_SWAP,
+            InventoryAction.HOTBAR_MOVE_AND_READD,
         )
     }
 }
