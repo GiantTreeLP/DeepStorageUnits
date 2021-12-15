@@ -1,7 +1,6 @@
 package de.gianttree.mc.deepstorage.listeners
 
 import de.gianttree.mc.deepstorage.DeepStorageUnits
-import de.gianttree.mc.deepstorage.DsuManager
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.Particle
@@ -20,8 +19,7 @@ import org.bukkit.persistence.PersistentDataType
 import org.bukkit.block.data.type.Chest as DataTypeChest
 
 class WorldInteraction(
-    private val plugin: DeepStorageUnits,
-    private val dsuManager: DsuManager
+    private val plugin: DeepStorageUnits
 ) : Listener {
 
     @EventHandler
@@ -34,7 +32,8 @@ class WorldInteraction(
 
                 chest.persistentDataContainer.set(plugin.dsuMarker, PersistentDataType.BYTE, 1.toByte())
 
-                dsuManager.createInventory(chest, meta.displayName())
+                plugin.dsuForChest(chest)
+                chest.customName(meta.displayName())
                 chest.blockData = chestBlockData
                 chest.update()
             }
@@ -87,7 +86,7 @@ class WorldInteraction(
             if (dsu.upgrades > 0) {
                 chest.world.dropItemNaturally(
                     centerLocation,
-                    plugin.upgradeItem.clone().apply {
+                    plugin.items.upgradeItem.clone().apply {
                         amount = dsu.upgrades
                     }
                 )
