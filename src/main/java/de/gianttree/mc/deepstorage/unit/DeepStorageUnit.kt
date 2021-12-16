@@ -132,7 +132,7 @@ class DeepStorageUnit(
 //        this.update()
     }
 
-    private fun getItem(): ItemStack? {
+    internal fun getItem(): ItemStack? {
         val item = chest.snapshotInventory.getItem(this.centerSlot)?.clone()
         return item?.apply {
             this.amount = 1

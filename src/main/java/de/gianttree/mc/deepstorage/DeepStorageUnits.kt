@@ -3,6 +3,7 @@ package de.gianttree.mc.deepstorage
 import com.google.common.cache.CacheBuilder
 import com.google.common.cache.CacheLoader
 import com.google.gson.reflect.TypeToken
+import de.gianttree.mc.deepstorage.commands.Debug
 import de.gianttree.mc.deepstorage.listeners.InventoryInteraction
 import de.gianttree.mc.deepstorage.listeners.ItemInteraction
 import de.gianttree.mc.deepstorage.listeners.WorldInteraction
@@ -64,7 +65,17 @@ class DeepStorageUnits : JavaPlugin() {
 
         this.addRecipes()
         this.registerListeners()
+        this.registerCommands()
         this.registerEyeCandy()
+    }
+
+    private fun registerCommands() {
+        this.getCommand("deepstorageunits")?.apply {
+            val command = Debug(this@DeepStorageUnits)
+            this.tabCompleter = command
+            this.setExecutor(command)
+            this.permission = "deepstorageunits.debug"
+        }
     }
 
     private fun registerListeners() {

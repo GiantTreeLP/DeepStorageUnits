@@ -4,3 +4,8 @@ version: '1.0'
 author: GiantTree
 main: de.gianttree.mc.deepstorage.DeepStorageUnits
 website: https://git.groundmc.net/GiantTree/DeepStorageUnits
+
+commands:
+  deepstorageunits:
+    permission: 'deepstorageunits.debug'
+    usage: '/<command>'
