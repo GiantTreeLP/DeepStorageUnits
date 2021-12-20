@@ -16,7 +16,6 @@ import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.block.Chest
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.RecipeChoice
 import org.bukkit.inventory.ShapedRecipe
 import org.bukkit.persistence.PersistentDataHolder
 import org.bukkit.persistence.PersistentDataType
@@ -79,8 +78,7 @@ class DeepStorageUnits : JavaPlugin() {
     }
 
     private fun registerListeners() {
-        val inventoryInteraction = InventoryInteraction(this)
-        Bukkit.getPluginManager().registerEvents(inventoryInteraction, this)
+        Bukkit.getPluginManager().registerEvents(InventoryInteraction(this), this)
         Bukkit.getPluginManager().registerEvents(WorldInteraction(this), this)
         Bukkit.getPluginManager().registerEvents(ItemInteraction(this), this)
     }
@@ -90,7 +88,7 @@ class DeepStorageUnits : JavaPlugin() {
             shape("ABA", "BCB", "ABA")
             setIngredient('A', Material.EMERALD)
             setIngredient('B', Material.DIAMOND)
-            setIngredient('C', RecipeChoice.ExactChoice(ItemStack(Material.ENDER_CHEST)))
+            setIngredient('C', Material.ENDER_CHEST)
         })
         Bukkit.addRecipe(ShapedRecipe(NamespacedKey(this, "dsu_upgrade"), this.items.upgradeItem).apply {
             shape("ACA", "ABA", "ADA")
