@@ -11,6 +11,7 @@ import org.bukkit.persistence.PersistentDataType
 
 private const val NUM_STACKS = 64
 private const val STACK_SIZE = 64
+private const val UPGRADE_STACKS = 16
 
 class DeepStorageUnit(
     private val plugin: DeepStorageUnits,
@@ -27,7 +28,7 @@ class DeepStorageUnit(
         get() = (NUM_STACKS * stackSize).toLong()
 
     private val bonusStacks: Int
-        get() = this.upgrades * 8
+        get() = this.upgrades * UPGRADE_STACKS
 
     internal var itemCount: Long = 0
         get() = chest.persistentDataContainer[plugin.itemCountKey, PersistentDataType.LONG]
