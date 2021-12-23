@@ -54,7 +54,9 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
             val chest = event.inventory.holder
             if (chest is Chest && plugin.isDSU(chest)) {
                 val dsu = plugin.dsuForChest(chest) ?: return
-                if (event.action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
+                if (!plugin.isBlocker(event.currentItem) &&
+                    event.clickedInventory != event.inventory &&
+                    event.action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
                     event.currentItem = dsu.addItem(event.currentItem)
                     event.result = Event.Result.DENY
                 }
