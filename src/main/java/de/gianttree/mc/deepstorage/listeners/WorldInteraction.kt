@@ -1,5 +1,6 @@
 package de.gianttree.mc.deepstorage.listeners
 
+import com.destroystokyo.paper.ParticleBuilder
 import de.gianttree.mc.deepstorage.DeepStorageUnits
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -47,9 +48,11 @@ class WorldInteraction(
                         DataTypeChest.Type.LEFT -> {
                             holder.leftSide as Chest
                         }
+
                         DataTypeChest.Type.RIGHT -> {
                             holder.rightSide as Chest
                         }
+
                         else -> {
                             return@Runnable
                         }
@@ -96,7 +99,11 @@ class WorldInteraction(
             if (event.isDropItems) {
                 chest.world.dropItemNaturally(chest.location, dsu.getDrop())
             }
-            chest.world.spawnParticle(Particle.BLOCK_CRACK, centerLocation, 16, chest.blockData)
+            ParticleBuilder(Particle.BLOCK)
+                .location(centerLocation)
+                .count(16)
+                .receivers(24)
+                .spawn()
             chest.world.playSound(centerLocation, chest.blockData.soundGroup.breakSound, 1f, 1f)
             chest.block.type = Material.AIR
             event.isCancelled = true

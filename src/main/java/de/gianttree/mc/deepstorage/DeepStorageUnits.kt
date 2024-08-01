@@ -121,11 +121,11 @@ class DeepStorageUnits : JavaPlugin() {
     }
 
     companion object {
-        const val dsuName = "Deep Storage Unit"
-        const val dsuLore = "A storage, deep as the ocean."
+        const val DSU_NAME = "Deep Storage Unit"
+        const val DSU_LORE = "A storage, deep as the ocean."
 
-        const val upgradeName = "Deep Upgrade"
-        const val upgradeLore = "Upgrade your Deep Storage Unit with this item."
+        const val UPGRADE_NAME = "Deep Upgrade"
+        const val UPGRADE_LORE = "Upgrade your Deep Storage Unit with this item."
 
         internal val componentListType = TypeToken.getParameterized(List::class.java, Component::class.java).type
 

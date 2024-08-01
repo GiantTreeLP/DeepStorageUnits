@@ -13,8 +13,8 @@ class Items(
 ) {
     internal val emptyDeepStorageUnit = ItemStack(Material.CHEST, 1).apply {
         this.editMeta {
-            it.displayName(Component.text(DeepStorageUnits.dsuName).color(NamedTextColor.AQUA))
-            it.lore(listOf(Component.text(DeepStorageUnits.dsuLore)))
+            it.displayName(Component.text(DeepStorageUnits.DSU_NAME).color(NamedTextColor.AQUA))
+            it.lore(listOf(Component.text(DeepStorageUnits.DSU_LORE)))
 
             it.persistentDataContainer[plugin.dsuMarker, PersistentDataType.BYTE] = 1
         }
@@ -22,11 +22,11 @@ class Items(
 
     internal val upgradeItem = ItemStack(Material.ENDER_EYE, 1).apply {
         this.editMeta {
-            it.displayName(Component.text(DeepStorageUnits.upgradeName).color(NamedTextColor.GOLD))
-            it.lore(listOf(Component.text(DeepStorageUnits.upgradeLore)))
+            it.displayName(Component.text(DeepStorageUnits.UPGRADE_NAME).color(NamedTextColor.GOLD))
+            it.lore(listOf(Component.text(DeepStorageUnits.UPGRADE_LORE)))
             it.persistentDataContainer[plugin.upgradeMarker, PersistentDataType.BYTE] = 1
 
-            it.addEnchant(Enchantment.DURABILITY, 1, false)
+            it.addEnchant(Enchantment.UNBREAKING, 1, false)
             it.addItemFlags(ItemFlag.HIDE_ENCHANTS)
         }
     }

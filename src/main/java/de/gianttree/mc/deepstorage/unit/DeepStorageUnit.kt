@@ -64,13 +64,13 @@ class DeepStorageUnit(
 
         if (!plugin.isCreated(chest)) {
             val contents = inv.storageContents
-            inv.setContents(Array(inv.size) {
+            inv.contents = Array(inv.size) {
                 if (it != centerSlot) {
                     plugin.items.blockerItem
                 } else {
-                    contents[it]
+                    contents?.get(it)
                 }
-            })
+            }
             chest.persistentDataContainer[plugin.createdMarker, PersistentDataType.BYTE] = 1.toByte()
         }
         this.update()

@@ -35,7 +35,7 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
             val dsu = plugin.dsuForChest(container) ?: return
 
             if (event.action in PLACE_ACTIONS) {
-                event.view.cursor = dsu.addItem(event.cursor)
+                event.view.setCursor(dsu.addItem(event.cursor))
                 event.result = Event.Result.DENY
             } else if (event.action in HOT_BAR_ACTIONS) {
                 if (event.hotbarButton == -1 && event.whoClicked.inventory.itemInOffHand.type != Material.AIR) {
@@ -56,7 +56,8 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
                 val dsu = plugin.dsuForChest(chest) ?: return
                 if (!plugin.isBlocker(event.currentItem) &&
                     event.clickedInventory != event.inventory &&
-                    event.action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
+                    event.action == InventoryAction.MOVE_TO_OTHER_INVENTORY
+                ) {
                     event.currentItem = dsu.addItem(event.currentItem)
                     event.result = Event.Result.DENY
                 }
@@ -76,17 +77,18 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
             val dsu = plugin.dsuForChest(container) ?: return
 
             val cursor = event.cursor
-            if (cursor == null || cursor.type == Material.AIR) {
-                @Suppress("NON_EXHAUSTIVE_WHEN")
+            if (cursor.type == Material.AIR) {
                 when (event.action) {
                     InventoryAction.PICKUP_ALL -> {
-                        event.view.cursor = dsu.retrieveItemFullStack()
+                        event.view.setCursor(dsu.retrieveItemFullStack())
                         event.result = Event.Result.DENY
                     }
+
                     InventoryAction.PICKUP_HALF -> {
-                        event.view.cursor = dsu.retrieveItemHalfStack()
+                        event.view.setCursor(dsu.retrieveItemFullStack())
                         event.result = Event.Result.DENY
                     }
+
                     in HOT_BAR_ACTIONS -> {
                         if (dsu.hasItem()) {
                             if (event.hotbarButton == -1) {
@@ -102,6 +104,8 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
                             }
                         }
                     }
+
+                    else -> {}
                 }
             }
             if (event.action == InventoryAction.MOVE_TO_OTHER_INVENTORY) {
@@ -128,7 +132,6 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
 
         private val HOT_BAR_ACTIONS = setOf(
             InventoryAction.HOTBAR_SWAP,
-            InventoryAction.HOTBAR_MOVE_AND_READD,
         )
     }
 }
