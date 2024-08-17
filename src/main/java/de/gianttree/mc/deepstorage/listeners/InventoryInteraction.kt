@@ -85,7 +85,7 @@ class InventoryInteraction(private val plugin: DeepStorageUnits) : Listener {
                     }
 
                     InventoryAction.PICKUP_HALF -> {
-                        event.view.setCursor(dsu.retrieveItemFullStack())
+                        event.view.setCursor(dsu.retrieveItemHalfStack())
                         event.result = Event.Result.DENY
                     }
 
