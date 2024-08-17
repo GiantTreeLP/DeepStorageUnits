@@ -100,6 +100,7 @@ class WorldInteraction(
                 chest.world.dropItemNaturally(chest.location, dsu.getDrop())
             }
             ParticleBuilder(Particle.BLOCK)
+                .data(chest.blockData)
                 .location(centerLocation)
                 .count(16)
                 .receivers(24)
